@@ -1,5 +1,3 @@
-package ca.utoronto.utm.assignment1.othello;
-
 import java.util.ArrayList;
 import java.util.Random;
 
