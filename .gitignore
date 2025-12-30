@@ -1,0 +1,8 @@
+# Ignore all .idea folders anywhere
+.idea/
+
+# Compiled folder
+/target/
+
+# Compiled classes
+*.class
