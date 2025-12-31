@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class OthelloGameEngine {
     private Othello game;               // core game state
@@ -26,7 +27,7 @@ public class OthelloGameEngine {
 
     // Can't undo game if game over
     public MoveResult undoMove() {
-        if (history.isEmpty()) {
+        if (history.isEmpty() || game.isGameOver()) {
             return new MoveResult(false, game.getWhosTurn(), game.getBoard(), false);
         }
         MoveCommand last = history.removeLast();
@@ -53,23 +54,111 @@ public class OthelloGameEngine {
         return game;
     }
 
-    public static void main(String args[]) {
-        // Create new game engine
-        Othello o = new Othello();
-        HumanStrategy p1 = new HumanStrategy(o, OthelloBoard.P1);
-        RandomStrategy p2 = new RandomStrategy(o, OthelloBoard.P2);
-        OthelloGameEngine gameEngine = new OthelloGameEngine(o, p1, p2);
+    public static void main(String[] args) {
+        Othello game = new Othello();
 
-        // Simulate getting move
-        Move move = p1.getMove(); // Receive API request for new move
+        HumanStrategy p1 = new HumanStrategy(game, OthelloBoard.P1);
+        RandomStrategy p2 = new RandomStrategy(game, OthelloBoard.P2);
 
-        MoveCommand moveCommand = new MoveCommand(o, move, p1.getPlayer());
-        MoveResult result = gameEngine.executeMove(moveCommand);
+        OthelloGameEngine engine = new OthelloGameEngine(game, p1, p2);
+        Scanner scanner = new Scanner(System.in);
 
-        System.out.println(result.isSuccess());
-        result = gameEngine.undoMove();
-        System.out.println(result.isSuccess());
+        char turn = game.getWhosTurn();
+        boolean p1Passed = false;
+        boolean p2Passed = false;
 
-        System.out.println(o.getBoard().toString());
+        System.out.println("Starting Othello");
+        System.out.println(game.getBoard());
+
+        while (true) {
+
+            // =======================
+            // PLAYER 1 (HUMAN)
+            // =======================
+            if (turn == OthelloBoard.P1) {
+
+                System.out.println("Your turn (B)");
+
+                // Optional undo / redo
+                System.out.print("Undo last move? (y/n): ");
+                if (scanner.nextLine().equalsIgnoreCase("y")) {
+                    MoveResult undo = engine.undoMove();
+                    undo = engine.undoMove();
+                    System.out.println(undo.getGameState());
+                    turn = undo.getNextTurn();
+                    continue;
+                }
+
+                System.out.print("Redo move? (y/n): ");
+                if (scanner.nextLine().equalsIgnoreCase("y")) {
+                    MoveResult redo = engine.redoMove();
+                    System.out.println(redo.getGameState());
+                    turn = redo.getNextTurn();
+                    continue;
+                }
+
+                // Get human move
+                Move move = p1.getMove();
+
+                if (move == null) {
+                    System.out.println("No valid moves for Player 1. Passing.");
+                    p1Passed = true;
+                    turn = OthelloBoard.P2;
+                    if (p1Passed && p2Passed) break;
+                    continue;
+                }
+
+                MoveCommand command = new MoveCommand(game, move, OthelloBoard.P1);
+                MoveResult result = engine.executeMove(command);
+
+                System.out.println(result.getGameState());
+
+                if (!result.isSuccess()) {
+                    System.out.println("Invalid move, try again.");
+                    continue;
+                }
+
+                p1Passed = (result.getNextTurn() == OthelloBoard.P1);
+                turn = result.getNextTurn();
+            }
+
+            // =======================
+            // PLAYER 2 (RANDOM)
+            // =======================
+            else {
+                System.out.println("Random AI turn (W)");
+
+                Move move = p2.getMove();
+
+                if (move == null) {
+                    System.out.println("Player 2 has no valid moves. Passing.");
+                    p2Passed = true;
+                    turn = OthelloBoard.P1;
+                    if (p1Passed && p2Passed) break;
+                    continue;
+                }
+
+                MoveCommand command = new MoveCommand(game, move, OthelloBoard.P2);
+                MoveResult result = engine.executeMove(command);
+
+                System.out.println(game.getBoard());
+
+                p2Passed = (result.getNextTurn() == OthelloBoard.P2);
+                turn = result.getNextTurn();
+            }
+        }
+
+        // =======================
+        // GAME OVER
+        // =======================
+        System.out.println("Game over.");
+        System.out.println(game.getBoard());
+
+        int p1Score = game.getBoard().getCount(OthelloBoard.P1);
+        int p2Score = game.getBoard().getCount(OthelloBoard.P2);
+
+        System.out.println("Final score:");
+        System.out.println("Player 1 (B): " + p1Score);
+        System.out.println("Player 2 (W): " + p2Score);
     }
 }
