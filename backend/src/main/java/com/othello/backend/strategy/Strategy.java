@@ -1,3 +1,7 @@
+package com.othello.backend.strategy;
+
+import com.othello.backend.engine.Othello;
+import com.othello.backend.engine.Move;
 /**
  * The strategy class is an abstract base for all types of Othello players.
  * It stores who the player is and gives a structure for making moves.

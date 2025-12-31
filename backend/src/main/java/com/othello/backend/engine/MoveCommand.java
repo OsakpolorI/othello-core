@@ -1,3 +1,5 @@
+package com.othello.backend.engine;
+
 public class MoveCommand implements Command {
     private Othello game;
     private Move move;

@@ -1,3 +1,7 @@
+package com.othello.backend.engine;
+
+import com.othello.backend.strategy.*;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 

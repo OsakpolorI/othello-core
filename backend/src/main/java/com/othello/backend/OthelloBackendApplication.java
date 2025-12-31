@@ -1,0 +1,13 @@
+package com.othello.backend;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class OthelloBackendApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(OthelloBackendApplication.class, args);
+	}
+
+}

@@ -1,3 +1,5 @@
+package com.othello.backend.engine;
+
 public class MoveResult {
     private final boolean success;
     private final char nextTurn;

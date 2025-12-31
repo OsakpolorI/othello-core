@@ -1,3 +1,5 @@
+package com.othello.backend.engine;
+
 /**
  * Represents a move on the Othello board with a row and column position.
  */
