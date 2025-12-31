@@ -157,14 +157,14 @@ The goal of this project is educational: to demonstrate full-stack development f
     - `execute()` applies move
     - `undo()` reverts move
 
-- **Player**
+- **Strategy**
     - Interface with `getMove(Board)` method
 
 ---
 
 ### AI & Strategy
 - **Strategy Interface**
-    - `getBestMove(Board, Player)`
+    - `getBestMove(Board, Strategy)`
 - **Implementations**
     - `RandomStrategy`
     - `GreedyStrategy`
