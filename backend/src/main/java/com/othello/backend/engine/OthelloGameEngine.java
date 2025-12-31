@@ -1,16 +1,22 @@
 package com.othello.backend.engine;
 
 import com.othello.backend.strategy.*;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class OthelloGameEngine {
+    @Getter
     private Othello game;               // core game state
-    private Strategy player1;
-    private Strategy player2;
+    @Getter
+    private final Strategy player1;
+    @Getter
+    private final Strategy player2;
     public ArrayList<MoveCommand> history;  // moves done
     private ArrayList<MoveCommand> redoStack; // moves undone
+    @Getter
+    private MoveResult gameState;
 
     public OthelloGameEngine(Othello game, Strategy player1, Strategy player2) {
         this.game = game;
@@ -18,6 +24,7 @@ public class OthelloGameEngine {
         this.player2 = player2;
         this.history = new ArrayList<>();
         this.redoStack = new ArrayList<>();
+        this.gameState = new MoveResult(true, game.getWhosTurn(), game.getBoard(), false);
     }
 
     public MoveResult executeMove(MoveCommand moveCommand) {
@@ -26,6 +33,7 @@ public class OthelloGameEngine {
             history.add(moveCommand);
             redoStack.clear(); // redo is only for undone moves
         }
+        gameState = result;
         return result;
     }
 
@@ -37,6 +45,7 @@ public class OthelloGameEngine {
         MoveCommand last = history.removeLast();
         MoveResult result = last.undo();
         redoStack.add(last);
+        gameState = result;
         return result;
     }
 
@@ -47,15 +56,12 @@ public class OthelloGameEngine {
         MoveCommand next = redoStack.removeLast();
         MoveResult result =  next.execute();
         history.add(next);
+        gameState = result;
         return result;
     }
 
     public Strategy getCurrentPlayer() {
         return game.getWhosTurn() == 'B' ? player1 : player2;
-    }
-
-    public Othello getGame() {
-        return game;
     }
 
     public static void main(String[] args) {
