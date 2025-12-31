@@ -2,7 +2,7 @@
  * The strategy class is an abstract base for all types of Othello players.
  * It stores who the player is and gives a structure for making moves.
  */
-abstract class Strategy {
+public abstract class Strategy {
     protected final Othello othello;
     protected final char player;
 
@@ -24,4 +24,11 @@ abstract class Strategy {
      * @return the chosen Move for this player
      */
     public abstract Move getMove();
+
+    /**
+     * Return the character of this player.
+     */
+    public char getPlayer() {
+        return player;
+    }
 }
