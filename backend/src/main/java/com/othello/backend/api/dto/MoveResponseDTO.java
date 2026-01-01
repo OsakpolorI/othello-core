@@ -2,6 +2,11 @@ package com.othello.backend.api.dto;
 
 import com.othello.backend.engine.MoveResult;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class MoveResponseDTO {
     private final boolean success;
     private final char nextTurn;

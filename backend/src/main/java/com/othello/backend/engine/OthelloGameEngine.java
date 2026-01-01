@@ -29,10 +29,11 @@ public class OthelloGameEngine {
 
     public MoveResult executeMove(MoveCommand moveCommand) {
         MoveResult result = moveCommand.execute();
-        if (result.isSuccess()) {
-            history.add(moveCommand);
-            redoStack.clear(); // redo is only for undone moves
+        if (!result.isSuccess()) {
+            return new MoveResult(false, game.getWhosTurn(), game.getBoard(), false);
         }
+        history.add(moveCommand);
+        redoStack.clear(); // redo is only for undone moves
         gameState = result;
         return result;
     }
