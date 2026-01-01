@@ -18,7 +18,7 @@ public class GameService {
 
     // Stores games in memory: UserID -> Game Instance
     private final Map<String, OthelloGameEngine> games = new ConcurrentHashMap<>();
-    private StrategyFactory factory;
+    private final StrategyFactory factory = new StrategyFactory();;
 
     public MoveResponseDTO createNewGame(String userId, String strategy) {
         if (games.containsKey(userId)) {
@@ -81,9 +81,7 @@ public class GameService {
         OthelloGameEngine gameEngine = games.get(userId);
         if (gameEngine == null) throw new GameNotFoundException(userId);
 
-        gameEngine.redoMove();
         MoveResult result = gameEngine.redoMove();
-
         if (!result.isSuccess()) throw new InvalidRedoException();
         return new MoveResponseDTO(result);
     }

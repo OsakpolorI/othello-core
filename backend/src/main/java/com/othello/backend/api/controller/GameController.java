@@ -15,14 +15,14 @@ import com.othello.backend.api.dto.*;
 
 @RestController
 @RequestMapping("/api/v1/games")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin
 public class GameController {
     @Autowired
     private GameService gameService;
 
     @PostMapping("/new")
     public ResponseEntity<MoveResponseDTO> newGame(
-            @RequestHeader String userId,
+            @RequestHeader("X-User-ID") String userId,
             @RequestBody NewGameRequestDTO request) {
         return ResponseEntity.ok(gameService.createNewGame(userId, request.getStrategy()));
     }
