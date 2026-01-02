@@ -23,7 +23,7 @@ public class MoveResponseDTO {
     public MoveResponseDTO(MoveResult result) {
         success = result.isSuccess();
         nextTurn = result.getNextTurn();
-        board = result.getGameState().getBoard();
+        board = result.getGameState().getBoardCopy();
         gameOver = result.isGameOver();
     }
 }

@@ -46,7 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.classList.add('cell');
                 cell.dataset.row = row;
                 cell.dataset.col = col;
-                cell.onclick = () => handleMove(row, col);
+                cell.addEventListener('click', () =>
+                    handleMoveAction('move', { row, column: col })
+                );
 
                 if (boardState[row][col] !== 0) {
                     const piece = document.createElement('div');
@@ -67,13 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
         evalFill.style.height = `${value * maxHeight}px`;
     }
 
-    async function handleMove(row, col) {
-        let result = await postRequest('move', {
-            row: row,
-            column: col
-        })
-
+    async function handleMoveAction(action, body = {}) {
+        let result = await postRequest(action, body);
         if (!result) return;
+
         let firstMove = result.shift();
         turnText.innerText = (firstMove.nextTurn === 'X') ? 'YOUR MOVE' : "BOT'S MOVE";
         renderBoard(createBoard(firstMove));
@@ -114,7 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createBoard(result) {
-        console.log(result)
         let rawBoard = result.board;
         let board = []
         for (let row of rawBoard) {
@@ -159,7 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     startBtn.addEventListener('click', initGame);
     newGameBtn.addEventListener('click', showStartScreen);
-
+    undoBtn.addEventListener('click', () => handleMoveAction('undo'))
+    redoBtn.addEventListener('click', () => handleMoveAction('redo'))
     showStartScreen();
 });
 
