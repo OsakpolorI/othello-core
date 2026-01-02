@@ -5,6 +5,9 @@ import com.othello.backend.api.exception.*;
 import com.othello.backend.engine.*;
 import com.othello.backend.strategy.HumanStrategy;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -43,17 +46,19 @@ public class GameService {
         return new MoveResponseDTO(gameEngine.getGameState());
     }
 
-    public MoveResponseDTO makeMove(String userId, int row, int col) {
+    public List<MoveResponseDTO> makeMove(String userId, int row, int col) {
         OthelloGameEngine gameEngine = games.get(userId);
+        ArrayList<MoveResponseDTO> moves = new ArrayList<>();
         if (gameEngine == null) throw new GameNotFoundException(userId);
 
         MoveCommand moveCommand = new MoveCommand(gameEngine.getGame(), new Move(row, col), gameEngine.getPlayer1().getPlayer());
         MoveResult result = gameEngine.executeMove(moveCommand); // Logic from Day 1-3
+        moves.add(new MoveResponseDTO(result));
         if (!result.isSuccess()) {
             throw new InvalidMoveException();
         }
         else if (result.isGameOver() || result.getNextTurn() == OthelloBoard.P1) {
-            return new MoveResponseDTO(result);
+            return moves;
         }
 
         while(result.getNextTurn() == OthelloBoard.P2) {
@@ -62,27 +67,34 @@ public class GameService {
                     gameEngine.getPlayer2().getMove(),
                     gameEngine.getPlayer2().getPlayer());
             result = gameEngine.executeMove(moveCommand);
+            moves.add(new MoveResponseDTO(result));
         }
-        return new MoveResponseDTO(result);
+        return moves;
     }
 
-    public MoveResponseDTO undoMove(String userId) {
+    public List<MoveResponseDTO> undoMove(String userId) {
         OthelloGameEngine gameEngine = games.get(userId);
+        ArrayList<MoveResponseDTO> moves = new ArrayList<>();
         if (gameEngine == null) throw new GameNotFoundException(userId);
 
-        gameEngine.undoMove();
+        moves.add(new MoveResponseDTO(gameEngine.undoMove()));
         MoveResult result = gameEngine.undoMove();
+        moves.add(new MoveResponseDTO(result));
 
         if (!result.isSuccess()) throw new InvalidUndoException();
-        return new MoveResponseDTO(result);
+        return moves;
     }
 
-    public MoveResponseDTO redoMove(String userId) {
+    public List<MoveResponseDTO> redoMove(String userId) {
         OthelloGameEngine gameEngine = games.get(userId);
+        ArrayList<MoveResponseDTO> moves = new ArrayList<>();
         if (gameEngine == null) throw new GameNotFoundException(userId);
 
+        moves.add(new MoveResponseDTO(gameEngine.redoMove()));
         MoveResult result = gameEngine.redoMove();
+        moves.add(new MoveResponseDTO(result));
+
         if (!result.isSuccess()) throw new InvalidRedoException();
-        return new MoveResponseDTO(result);
+        return moves;
     }
 }

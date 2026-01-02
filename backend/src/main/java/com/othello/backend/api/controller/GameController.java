@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import com.othello.backend.api.dto.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/games")
@@ -33,19 +34,19 @@ public class GameController {
     }
 
     @PostMapping("/move")
-    public ResponseEntity<MoveResponseDTO> move(
+    public ResponseEntity<List<MoveResponseDTO>> move(
             @RequestHeader("X-User-ID") String userId,
             @RequestBody MoveRequestDTO request) {
         return ResponseEntity.ok(gameService.makeMove(userId, request.getRow(), request.getColumn()));
     }
 
     @PostMapping("/undo")
-    public ResponseEntity<MoveResponseDTO> undoMove(@RequestHeader("X-User-ID")  String userId) {
+    public ResponseEntity<List<MoveResponseDTO>> undoMove(@RequestHeader("X-User-ID")  String userId) {
         return ResponseEntity.ok(gameService.undoMove(userId));
     }
 
     @PostMapping("/redo")
-    public ResponseEntity<MoveResponseDTO> redoMove(@RequestHeader("X-User-ID") String userId) {
+    public ResponseEntity<List<MoveResponseDTO>> redoMove(@RequestHeader("X-User-ID") String userId) {
         return ResponseEntity.ok(gameService.redoMove(userId));
     }
 }
