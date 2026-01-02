@@ -60,33 +60,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateEvalBar(value) {
+        let demoEval;
         // value: -1.0 (player huge advantage) to +1.0 (bot huge advantage)
         // Map to full bar height (400px total range)
         const maxHeight = 400; // Half bar = 200px (center to top/bottom)
         evalFill.style.height = `${value * maxHeight}px`;
     }
 
-    function handleMove(r, c) {
-        console.log(`Move at (${r}, ${c})`);
-        turnText.innerText = turnText.innerText === "YOUR MOVE" ? "BOT'S MOVE" : "YOUR MOVE";
+    async function handleMove(row, col) {
+        let result = await postRequest('move', {
+            row: row,
+            column: col
+        })
 
-        // Demo: random eval between -0.8 and +0.8
-        const demoEval = (Math.random() - 0.5) * 1.6;
-        updateEvalBar(demoEval);
+        if (!result) return;
+        let firstMove = result.shift();
+        turnText.innerText = (firstMove.nextTurn === 'X') ? 'YOUR MOVE' : "BOT'S MOVE";
+        renderBoard(createBoard(firstMove));
+        updateEvalBar((Math.random() - 0.5) * 1.6);
+
+        for (let move of result) {
+            await sleep(1.5);
+            turnText.innerText = (move.nextTurn === 'X') ? 'YOUR MOVE' : "BOT'S MOVE";
+            renderBoard(createBoard(move));
+            updateEvalBar((Math.random() - 0.5) * 1.6);
+        }
+    }
+    function sleep(seconds) {
+        return new Promise(resolve => setTimeout(resolve, seconds * 1000));
     }
 
-    async function createNewGame() {
+    async function postRequest(url, body = {}) {
         try {
-            const response = await fetch('/api/v1/games/new', {
+            const response = await fetch(`/api/v1/games/${url}`, {
                 method: 'POST',
                 headers: {
                     'X-User-ID': userId,
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                    strategy: aiSelect.value
-                })
+                body: JSON.stringify(body)
             });
 
             if (!response.ok) {
@@ -100,7 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function createBoard(rawBoard) {
+    function createBoard(result) {
+        console.log(result)
+        let rawBoard = result.board;
         let board = []
         for (let row of rawBoard) {
             board.push(row.split('').map((cell) => {
@@ -125,8 +140,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function initGame() {
-        const gameState = await createNewGame();
-        if (!gameState) return;
+        const result = await postRequest('new', {
+            strategy: aiSelect.value
+        });
+        if (!result) return;
 
         startScreen.classList.add('hidden');
         turnBar.classList.remove('hidden');
@@ -135,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.remove('hidden');
         });
 
-        renderBoard(createBoard(gameState.board));
+        renderBoard(createBoard(result));
         updateEvalBar(0); // neutral at start
         turnText.innerText = "YOUR MOVE";
     }
