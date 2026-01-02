@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Othello Professional</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="game-wrapper">
+    <!-- Turn Indicator Bar - Now always visible when game is active -->
+    <div id="turn-indicator-bar" class="status-bar hidden">
+        <span id="turn-text">YOUR MOVE</span>
+    </div>
+
+    <!-- Menu Bar -->
+    <header class="menu-bar">
+        <div class="button-group">
+            <button id="new-game" class="btn-outline">New Game</button>
+            <button id="undo" class="btn-dark">Undo</button>
+            <button id="redo" class="btn-dark">Redo</button>
+            <button id="hint" class="btn-dark">Hint</button>
+        </div>
+        <div class="sound-control">
+            <span>🔊</span>
+            <input type="range" min="0" max="100" value="50" class="slider">
+        </div>
+    </header>
+
+    <main class="main-layout">
+        <div class="center-column">
+            <div id="start-screen" class="overlay-card">
+                <h1>Welcome to Othello</h1>
+                <div class="setup-group">
+                    <label>Choose AI:</label>
+                    <select id="ai-select">
+                        <option value="RANDOM">Random</option>
+                        <option value="GREEDY">Greedy</option>
+                        <option value="MONTE-CARLO">Monte Carlo</option>
+                    </select>
+                </div>
+                <button id="start-game" class="btn-outline">Start Game</button>
+            </div>
+
+            <div id="board-wrapper">
+                <div id="board-container">
+                    <div id="board"></div>
+                </div>
+            </div>
+
+            <div class="sidebar-stats">
+                <h3>Colors Settings</h3>
+                <div class="stat-item">
+                    <div class="piece-small black"></div>
+                    <span>Black: <span id="black-count">2</span></span>
+                </div>
+                <div class="stat-item">
+                    <div class="piece-small white"></div>
+                    <span>White: <span id="white-count">2</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluation Bar -->
+        <div id="eval-container" class="eval-column hidden">
+            <div class="eval-wrapper">
+                <div class="eval-numbers">
+                    <span>+4</span><span>+3</span><span>+2</span><span>+1</span>
+                    <span>0</span>
+                    <span>-1</span><span>-2</span><span>-3</span><span>-4</span>
+                </div>
+                <div class="eval-bar">
+                    <div id="eval-fill-positive"></div> <!-- Bot advantage (up) -->
+                    <div id="eval-fill-negative"></div> <!-- Player advantage (down) -->
+                </div>
+                <div class="eval-labels">
+                    <span class="top-label">Bot Advantage</span>
+                    <span class="bottom-label">Win</span>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
