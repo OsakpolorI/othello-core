@@ -7,8 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const startBtn = document.getElementById('start-game');
     const newGameBtn = document.getElementById('new-game');
     const turnText = document.getElementById('turn-text');
-    const evalPositive = document.getElementById('eval-fill-positive');
-    const evalNegative = document.getElementById('eval-fill-negative');
+    const evalFill = document.getElementById('eval-fill');
 
     function addCoordinates() {
         document.querySelectorAll('.coord-label').forEach(el => el.remove());
@@ -17,14 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const colLabel = document.createElement('div');
             colLabel.classList.add('coord-label', 'col-label');
             colLabel.textContent = i + 1;
-            colLabel.style.left = `${80 + i * 60 + 30}px`;
+            colLabel.style.left = `${42 + i * 60 + 30}px`;
             colLabel.style.top = '15px';
             boardWrapper.appendChild(colLabel);
 
             const rowLabel = document.createElement('div');
             rowLabel.classList.add('coord-label', 'row-label');
             rowLabel.textContent = i + 1;
-            rowLabel.style.top = `${80 + i * 60 + 30}px`;
+            rowLabel.style.top = `${42 + i * 60 + 30}px`;
             rowLabel.style.left = '20px';
             boardWrapper.appendChild(rowLabel);
         }
@@ -54,18 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateEvalBar(value) {
         // value: -1.0 (player huge advantage) to +1.0 (bot huge advantage)
         // Map to full bar height (400px total range)
-        const maxHeight = 200; // Half bar = 200px (center to top/bottom)
-
-        if (value > 0) {
-            evalPositive.style.height = `${value * maxHeight}px`;
-            evalNegative.style.height = '0px';
-        } else if (value < 0) {
-            evalPositive.style.height = '0px';
-            evalNegative.style.height = `${Math.abs(value) * maxHeight}px`;
-        } else {
-            evalPositive.style.height = '0px';
-            evalNegative.style.height = '0px';
-        }
+        const maxHeight = 400; // Half bar = 200px (center to top/bottom)
+        evalFill.style.height = `${value * maxHeight}px`;
     }
 
     function handleMove(r, c) {
@@ -92,6 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showStartScreen() {
+        boardEl.style.backgroundColor = '#111';
+        boardEl.style.border = 'none';
         startScreen.classList.remove('hidden');
         turnBar.classList.add('hidden');
         evalContainer.classList.add('hidden');
@@ -102,4 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     startBtn.addEventListener('click', initGame);
     newGameBtn.addEventListener('click', showStartScreen);
+
+    showStartScreen();
 });
+

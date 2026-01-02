@@ -3,7 +3,7 @@
     --card-bg: #1a1a1a;
     --border-color: #333;
     --text-main: #ffffff;
-    --cell-bg: #d3d3d3;                 /* Light gray board - matches the reference */
+    --cell-bg: #1a1a1a;                 /* Light gray board - matches the reference */
     --cell-border: #aaaaaa;
     --valid-move-highlight: rgba(0, 200, 0, 0.4); /* Soft green for possible moves */
 }
@@ -108,11 +108,11 @@ body {
     text-align: center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     width: 320px;
-    top: 60px;
+    top: 120px;
 }
 
 .setup-group {
-    margin: 30px 0 40px;
+    margin: 30px 0 22px;
 }
 
 .setup-group label {
@@ -122,6 +122,8 @@ body {
 }
 
 #ai-select {
+    margin-top: 10px;
+    margin-bottom: 0px;
     padding: 8px;
     background: #333;
     color: white;
@@ -205,7 +207,7 @@ body {
 
 /* Evaluation Bar */
 .eval-column {
-    margin-top: 80px;
+    margin-top: 42px;
     margin-left: 30px;
 }
 
@@ -245,23 +247,15 @@ body {
     box-shadow: inset 0 0 15px rgba(0,0,0,0.6);
 }
 
-#eval-fill-positive,
-#eval-fill-negative {
+#eval-fill {
     position: absolute;
+    bottom: 0;                    /* Anchor to the bottom */
+    left: 0;
     width: 100%;
-    background: linear-gradient(to bottom, #ffffff, #e0e0e0);
-    box-shadow: 0 0 15px rgba(255,255,255,0.4);
+    height: 0;                     /* Start with zero height */
+    background: #fff;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
     transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-#eval-fill-positive {
-    bottom: 50%;
-    height: 0;
-}
-
-#eval-fill-negative {
-    top: 50%;
-    height: 0;
 }
 
 .eval-labels .top-label {
