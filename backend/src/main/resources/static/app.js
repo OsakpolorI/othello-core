@@ -8,6 +8,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const newGameBtn = document.getElementById('new-game');
     const turnText = document.getElementById('turn-text');
     const evalFill = document.getElementById('eval-fill');
+    const aiSelect  = document.querySelector("#ai-select");
+    const undoBtn = document.getElementById('undo');
+    const redoBtn = document.getElementById('redo');
+    const hintBtn = document.getElementById('hint');
+
+    if (localStorage.userId === undefined) {
+        localStorage.userId = crypto.randomUUID();
+    }
+    const userId = localStorage.userId;
 
     function addCoordinates() {
         document.querySelectorAll('.coord-label').forEach(el => el.remove());
@@ -66,18 +75,39 @@ document.addEventListener('DOMContentLoaded', () => {
         updateEvalBar(demoEval);
     }
 
-    function initGame() {
-        startScreen.classList.add('hidden');
-        turnBar.classList.remove('hidden');
-        evalContainer.classList.remove('hidden');
+    async function createNewGame() {
+        try {
+            const response = await fetch('/api/v1/games/new', {
+                method: 'POST',
+                headers: {
+                    'X-User-ID': userId,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    strategy: aiSelect.value
+                })
+            });
 
-        const initialBoard = Array(8).fill().map(() => Array(8).fill(0));
-        initialBoard[3][3] = 2; initialBoard[3][4] = 1;
-        initialBoard[4][3] = 1; initialBoard[4][4] = 2;
+            if (!response.ok) {
+                const errorBody = await response.json();
+                throw new Error(errorBody.message || `HTTP ${response.status}`);
+            }
+            return await response.json();
+        } catch (err) {
+            alert(err.message);
+            return null;
+        }
+    }
 
-        renderBoard(initialBoard);
-        updateEvalBar(0); // neutral at start
-        turnText.innerText = "YOUR MOVE";
+    function createBoard(rawBoard) {
+        let board = []
+        for (let row of rawBoard) {
+            board.push(row.split('').map((cell) => {
+                return (cell === ' ') ? 0 : (cell === 'X') ? 1 : 2
+            }))
+        }
+        return board
     }
 
     function showStartScreen() {
@@ -87,8 +117,27 @@ document.addEventListener('DOMContentLoaded', () => {
         turnBar.classList.add('hidden');
         evalContainer.classList.add('hidden');
         boardEl.innerHTML = '';
+        [newGameBtn, undoBtn, redoBtn, hintBtn].forEach((btn) => {
+            btn.classList.add('hidden');
+        });
         document.querySelectorAll('.coord-label').forEach(el => el.remove());
         updateEvalBar(0);
+    }
+
+    async function initGame() {
+        const gameState = await createNewGame();
+        if (!gameState) return;
+
+        startScreen.classList.add('hidden');
+        turnBar.classList.remove('hidden');
+        evalContainer.classList.remove('hidden');
+        [newGameBtn, undoBtn, redoBtn, hintBtn].forEach((btn) => {
+            btn.classList.remove('hidden');
+        });
+
+        renderBoard(createBoard(gameState.board));
+        updateEvalBar(0); // neutral at start
+        turnText.innerText = "YOUR MOVE";
     }
 
     startBtn.addEventListener('click', initGame);
