@@ -8,6 +8,13 @@
 - ~~so that api can be cleanly implemented~~
 
 
-- plan out / revise api endpoints
-- install springboot/dependencies
-- create controllers and service layers that connect to the game engine 
+- ~~plan out / revise api endpoints~~
+- ~~install springboot/dependencies~~
+- ~~create controllers and service layers that connect to the game engine~~
+
+
+- vibe-code looks of website(html, css, basic js), and add it to the static folder
+- fix any bugs from vibe-code (ex. html or css design, js implementation)
+- hook up backend to frontend via pre-established REST apis
+- add soft background music
+- add move animations and sound effects
