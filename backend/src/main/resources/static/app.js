@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const undoBtn = document.getElementById('undo');
     const redoBtn = document.getElementById('redo');
     const hintBtn = document.getElementById('hint');
+    let inputLocked = false;
 
     if (localStorage.userId === undefined) {
         localStorage.userId = crypto.randomUUID();
@@ -70,21 +71,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleMoveAction(action, body = {}) {
+        if (inputLocked) return
         let result = await postRequest(action, body);
         if (!result) return;
-
+        if (result.gameOver) {
+            handleGameOver();
+            return
+        }
         let firstMove = result.shift();
         turnText.innerText = (firstMove.nextTurn === 'X') ? 'YOUR MOVE' : "BOT'S MOVE";
         renderBoard(createBoard(firstMove));
         updateEvalBar((Math.random() - 0.5) * 1.6);
 
         for (let move of result) {
-            await sleep(1.5);
+            inputLocked = true;
+            await sleep(1);
             turnText.innerText = (move.nextTurn === 'X') ? 'YOUR MOVE' : "BOT'S MOVE";
             renderBoard(createBoard(move));
             updateEvalBar((Math.random() - 0.5) * 1.6);
+            inputLocked = false;
         }
     }
+
     function sleep(seconds) {
         return new Promise(resolve => setTimeout(resolve, seconds * 1000));
     }
@@ -108,6 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return await response.json();
         } catch (err) {
             alert(err.message);
+            if (url === 'new') {
+                let result = confirm('Do you want to delete your active session?')
+                if (result) await deleteRequest();
+            }
             return null;
         }
     }
@@ -155,6 +167,32 @@ document.addEventListener('DOMContentLoaded', () => {
         turnText.innerText = "YOUR MOVE";
     }
 
+    function handleGameOver() {
+        alert('Game Over!\n');
+        deleteRequest();
+    }
+
+    async function deleteRequest() {
+        try {
+            const response = await fetch(`/api/v1/games`, {
+                method: 'DELETE',
+                headers: {
+                    'X-User-ID': userId,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({})
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.json();
+                throw new Error(errorBody.message || `HTTP ${response.status}`);
+            }
+        } catch (err) {
+            alert(err.message);
+            return null;
+        }
+    }
     startBtn.addEventListener('click', initGame);
     newGameBtn.addEventListener('click', showStartScreen);
     undoBtn.addEventListener('click', () => handleMoveAction('undo'))

@@ -23,7 +23,7 @@ public class GameService {
     private final Map<String, OthelloGameEngine> games = new ConcurrentHashMap<>();
     private final StrategyFactory factory = new StrategyFactory();;
 
-    public MoveResponseDTO createNewGame(String userId, String strategy) {
+    public MoveResponseDTO createNewGameEngine(String userId, String strategy) {
         if (games.containsKey(userId)) {
             throw new GameInProgessException();
         }
@@ -97,4 +97,13 @@ public class GameService {
         if (!result.isSuccess()) throw new InvalidRedoException();
         return moves;
     }
+
+    public void deleteGameEngine(String userId) {
+        OthelloGameEngine gameEngine = games.get(userId);
+        if (gameEngine == null) {
+            throw new GameNotFoundException(userId);
+        }
+        games.remove(userId);
+    }
+
 }
