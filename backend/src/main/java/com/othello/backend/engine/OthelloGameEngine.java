@@ -4,6 +4,7 @@ import com.othello.backend.strategy.*;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class OthelloGameEngine {
@@ -24,13 +25,17 @@ public class OthelloGameEngine {
         this.player2 = player2;
         this.history = new ArrayList<>();
         this.redoStack = new ArrayList<>();
-        this.gameState = new MoveResult(true, game.getWhosTurn(), game.getBoard(), false);
+        this.gameState = new MoveResult(
+                true, game.getWhosTurn(), game.getBoard(), false,
+                new ArrayList<>(List.of(game.getCount(OthelloBoard.P1), game.getCount(OthelloBoard.P2))));
     }
 
     public MoveResult executeMove(MoveCommand moveCommand) {
         MoveResult result = moveCommand.execute();
         if (!result.isSuccess()) {
-            return new MoveResult(false, game.getWhosTurn(), game.getBoard(), false);
+            return new MoveResult(
+                    false, game.getWhosTurn(), game.getBoard(), false,
+            new ArrayList<>(List.of(game.getCount(OthelloBoard.P1), game.getCount(OthelloBoard.P2))));
         }
         history.add(moveCommand);
         redoStack.clear(); // redo is only for undone moves
@@ -41,7 +46,9 @@ public class OthelloGameEngine {
     // Can't undo game if game over
     public MoveResult undoMove() {
         if (history.isEmpty() || game.isGameOver()) {
-            return new MoveResult(false, game.getWhosTurn(), game.getBoard(), false);
+            return new MoveResult(
+                    false, game.getWhosTurn(), game.getBoard(), false,
+                    new ArrayList<>(List.of(game.getCount(OthelloBoard.P1), game.getCount(OthelloBoard.P2))));
         }
         MoveCommand last = history.removeLast();
         MoveResult result = last.undo();
@@ -52,17 +59,15 @@ public class OthelloGameEngine {
 
     public MoveResult redoMove() {
         if (redoStack.isEmpty()) {
-            return new MoveResult(false, game.getWhosTurn(), game.getBoard(), false);
+            return new MoveResult(
+                    false, game.getWhosTurn(), game.getBoard(), game.isGameOver(),
+            new ArrayList<>(List.of(game.getCount(OthelloBoard.P1), game.getCount(OthelloBoard.P2))));
         }
         MoveCommand next = redoStack.removeLast();
         MoveResult result =  next.execute();
         history.add(next);
         gameState = result;
         return result;
-    }
-
-    public Strategy getCurrentPlayer() {
-        return game.getWhosTurn() == 'B' ? player1 : player2;
     }
 
     public static void main(String[] args) {

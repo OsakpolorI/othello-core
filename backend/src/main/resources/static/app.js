@@ -12,6 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const undoBtn = document.getElementById('undo');
     const redoBtn = document.getElementById('redo');
     const hintBtn = document.getElementById('hint');
+    const blackCount = document.getElementById("black-count");
+    const whiteCount = document.getElementById("white-count");
+    const gameOverBanner = document.getElementById('game-over-banner');
+    const gameOverTitle = document.getElementById('game-over-title');
+    const gameOverMessage = document.getElementById('game-over-message');
+    const newGameFromOverBtn = document.getElementById('new-game-from-over');
     let inputLocked = false;
 
     if (localStorage.userId === undefined) {
@@ -74,13 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (inputLocked) return
         let result = await postRequest(action, body);
         if (!result) return;
-        if (result.gameOver) {
-            handleGameOver();
-            return
-        }
+        console.log(result)
         let firstMove = result.shift();
+
         turnText.innerText = (firstMove.nextTurn === 'X') ? 'YOUR MOVE' : "BOT'S MOVE";
         renderBoard(createBoard(firstMove));
+        updatePiecesCount(firstMove);
         updateEvalBar((Math.random() - 0.5) * 1.6);
 
         for (let move of result) {
@@ -88,9 +93,21 @@ document.addEventListener('DOMContentLoaded', () => {
             await sleep(1);
             turnText.innerText = (move.nextTurn === 'X') ? 'YOUR MOVE' : "BOT'S MOVE";
             renderBoard(createBoard(move));
+            updatePiecesCount(move);
             updateEvalBar((Math.random() - 0.5) * 1.6);
             inputLocked = false;
         }
+
+        if (firstMove.gameOver || (result.length > 0 && result.at(-1).gameOver)) {
+            const lastResult = result[result.length - 1] || firstMove;
+            return handleGameOver(lastResult);
+        }
+    }
+
+    function updatePiecesCount(result) {
+        //console.log(result, result.piecesCount)
+        blackCount.textContent = result.piecesCount[0];
+        whiteCount.textContent = result.piecesCount[1];
     }
 
     function sleep(seconds) {
@@ -163,13 +180,42 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         renderBoard(createBoard(result));
+        updatePiecesCount(result);
         updateEvalBar(0); // neutral at start
         turnText.innerText = "YOUR MOVE";
+        inputLocked = false;
     }
 
-    function handleGameOver() {
-        alert('Game Over!\n');
+    async function handleGameOver(result) {
         deleteRequest();
+        await sleep(1.5);
+
+        // Determine winner from last move result
+        let winner = 'draw';
+        if (result.piecesCount[0] > result.piecesCount[1]) {
+            winner = 'player'; // Black (player) has more
+        } else if (result.piecesCount[1] > result.piecesCount[0]) {
+            winner = 'bot';    // White (bot) has more
+        }
+        showGameOver(winner);
+    }
+
+    function showGameOver(winner) {
+        inputLocked = true;
+        gameOverBanner.classList.remove('hidden');
+
+        if (winner === 'player') {
+            gameOverMessage.textContent = 'You Win!';
+            gameOverMessage.classList.remove('loss');
+            gameOverMessage.classList.add('win');
+        } else if (winner === 'bot') {
+            gameOverMessage.textContent = 'Computer Wins';
+            gameOverMessage.classList.remove('win');
+            gameOverMessage.classList.add('loss');
+        } else {
+            gameOverMessage.textContent = 'Draw';
+            gameOverMessage.classList.remove('win', 'loss');
+        }
     }
 
     async function deleteRequest() {
@@ -197,6 +243,10 @@ document.addEventListener('DOMContentLoaded', () => {
     newGameBtn.addEventListener('click', showStartScreen);
     undoBtn.addEventListener('click', () => handleMoveAction('undo'))
     redoBtn.addEventListener('click', () => handleMoveAction('redo'))
+    newGameFromOverBtn.addEventListener('click', () => {
+        gameOverBanner.classList.add('hidden');
+        showStartScreen();
+    });
     showStartScreen();
 });
 
