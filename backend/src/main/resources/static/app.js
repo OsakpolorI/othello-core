@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let move of result) {
             inputLocked = true;
-            await sleep(1);
+            await sleep(0);
             turnText.innerText = (move.nextTurn === 'X') ? 'YOUR MOVE' : "BOT'S MOVE";
             renderBoard(createBoard(move));
             updatePiecesCount(move);

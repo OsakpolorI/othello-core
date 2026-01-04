@@ -10,6 +10,8 @@ public class StrategyFactory {
         }
         else if (product.equals("Greedy")) {
             return new  GreedyStrategy(game, OthelloBoard.P2);
+        } else if (product.equals("MonteCarlo")) {
+            return  new MonteCarloStrategy(game, OthelloBoard.P2);
         }
         return null;
     }
