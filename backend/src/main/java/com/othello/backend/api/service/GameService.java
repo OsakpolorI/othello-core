@@ -1,6 +1,7 @@
 package com.othello.backend.api.service;
 
 import com.othello.backend.api.dto.MoveResponseDTO;
+import com.othello.backend.api.dto.WinProbabilityDTO;
 import com.othello.backend.api.exception.*;
 import com.othello.backend.engine.*;
 import com.othello.backend.strategy.HumanStrategy;
@@ -104,6 +105,12 @@ public class GameService {
             throw new GameNotFoundException(userId);
         }
         games.remove(userId);
+    }
+
+    public WinProbabilityDTO getWinProbability(String userId, int simulations) {
+        OthelloGameEngine gameEngine = games.get(userId);
+        if (gameEngine == null) throw new GameNotFoundException(userId);
+        return new WinProbabilityDTO(gameEngine.getGame().estimateWinRate(simulations));
     }
 
 }

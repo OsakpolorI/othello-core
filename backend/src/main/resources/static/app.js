@@ -11,13 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiSelect  = document.querySelector("#ai-select");
     const undoBtn = document.getElementById('undo');
     const redoBtn = document.getElementById('redo');
-    const hintBtn = document.getElementById('hint');
     const blackCount = document.getElementById("black-count");
     const whiteCount = document.getElementById("white-count");
     const gameOverBanner = document.getElementById('game-over-banner');
     const gameOverTitle = document.getElementById('game-over-title');
     const gameOverMessage = document.getElementById('game-over-message');
     const newGameFromOverBtn = document.getElementById('new-game-from-over');
+    const winRate = document.getElementById('win-rate');
+    const moveSFX = new Audio('/audio/move.mp3');
     let inputLocked = false;
 
     if (localStorage.userId === undefined) {
@@ -68,12 +69,14 @@ document.addEventListener('DOMContentLoaded', () => {
         addCoordinates();
     }
 
-    function updateEvalBar(value) {
-        let demoEval;
+    async function updateEvalBar(value) {
+        let probability = await postRequest('probability', {simulations: value})
         // value: -1.0 (player huge advantage) to +1.0 (bot huge advantage)
         // Map to full bar height (400px total range)
         const maxHeight = 400; // Half bar = 200px (center to top/bottom)
-        evalFill.style.height = `${value * maxHeight}px`;
+        evalFill.style.height = `${probability.winProbability * maxHeight}px`;
+        winRate.textContent = Math.round(probability.winProbability * 100) + '%';
+        console.log(probability)
     }
 
     async function handleMoveAction(action, body = {}) {
@@ -86,15 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
         turnText.innerText = (firstMove.nextTurn === 'X') ? 'YOUR MOVE' : "BOT'S MOVE";
         renderBoard(createBoard(firstMove));
         updatePiecesCount(firstMove);
-        updateEvalBar((Math.random() - 0.5) * 1.6);
+        playMoveSound();
+        await updateEvalBar(200);
 
         for (let move of result) {
             inputLocked = true;
-            await sleep(0);
+            await sleep(aiSelect === 'MonteCarlo' ? 0.7 : 1);
             turnText.innerText = (move.nextTurn === 'X') ? 'YOUR MOVE' : "BOT'S MOVE";
             renderBoard(createBoard(move));
             updatePiecesCount(move);
-            updateEvalBar((Math.random() - 0.5) * 1.6);
+            playMoveSound();
+            await updateEvalBar(200);
             inputLocked = false;
         }
 
@@ -102,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const lastResult = result[result.length - 1] || firstMove;
             return handleGameOver(lastResult);
         }
+
     }
 
     function updatePiecesCount(result) {
@@ -159,11 +165,12 @@ document.addEventListener('DOMContentLoaded', () => {
         turnBar.classList.add('hidden');
         evalContainer.classList.add('hidden');
         boardEl.innerHTML = '';
-        [newGameBtn, undoBtn, redoBtn, hintBtn].forEach((btn) => {
+        [newGameBtn, undoBtn, redoBtn].forEach((btn) => {
             btn.classList.add('hidden');
         });
         document.querySelectorAll('.coord-label').forEach(el => el.remove());
-        updateEvalBar(0);
+        evalFill.style.height = `${0.5 * 400}px`;
+        winRate.textContent = 50 + '%';
     }
 
     async function initGame() {
@@ -175,13 +182,12 @@ document.addEventListener('DOMContentLoaded', () => {
         startScreen.classList.add('hidden');
         turnBar.classList.remove('hidden');
         evalContainer.classList.remove('hidden');
-        [newGameBtn, undoBtn, redoBtn, hintBtn].forEach((btn) => {
+        [newGameBtn, undoBtn, redoBtn].forEach((btn) => {
             btn.classList.remove('hidden');
         });
 
         renderBoard(createBoard(result));
-        updatePiecesCount(result);
-        updateEvalBar(0); // neutral at start
+        updatePiecesCount(result);// neutral at start
         turnText.innerText = "YOUR MOVE";
         inputLocked = false;
     }
@@ -239,6 +245,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
     }
+
+    function playMoveSound() {
+        moveSFX.currentTime = 0; // Reset to start
+        moveSFX.play();
+    }
+
     startBtn.addEventListener('click', initGame);
     newGameBtn.addEventListener('click', showStartScreen);
     undoBtn.addEventListener('click', () => handleMoveAction('undo'))

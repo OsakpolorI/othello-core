@@ -366,3 +366,7 @@ body {
         transform: translateY(0);
     }
 }
+
+#win-rate {
+    font-weight: normal;
+}

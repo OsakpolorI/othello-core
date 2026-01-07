@@ -49,4 +49,12 @@ public class GameController {
         gameService.deleteGameEngine(userId);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/probability")
+    public ResponseEntity<WinProbabilityDTO> getWinProbability(
+            @RequestHeader("X-User-ID") String userId,
+            @RequestBody WinProbabilityRequestDTO request) {
+
+        return ResponseEntity.ok(gameService.getWinProbability(userId, request.getSimulations()));
+    }
 }
