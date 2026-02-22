@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderBoard(createBoard(firstMove));
         updatePiecesCount(firstMove);
         playMoveSound();
-        await updateEvalBar(200);
+        await updateEvalBar(20);
 
         for (let move of result) {
             inputLocked = true;
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderBoard(createBoard(move));
             updatePiecesCount(move);
             playMoveSound();
-            await updateEvalBar(200);
+            await updateEvalBar(20);
             inputLocked = false;
         }
 

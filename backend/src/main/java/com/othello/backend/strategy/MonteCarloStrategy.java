@@ -18,7 +18,7 @@ public class MonteCarloStrategy extends Strategy {
     @Override
     public Move getMove() {
         Othello othelloSim = new Othello();
-        int numOfSimulations = 125;
+        int numOfSimulations = 100;
 
         RandomStrategy moveGen = new RandomStrategy(othello, player);
         ArrayList<Move> possibleMoves = moveGen.getPossibleMoves();
