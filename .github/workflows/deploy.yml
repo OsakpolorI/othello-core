@@ -17,24 +17,31 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: TEST - Verify Othello.java Injection
+      - name: Recreate School Files
+        env:
+          OTHELLO_JAVA: ${{ secrets.OTHELLO_JAVA_BASE64 }}
+          OTHELLO_BOARD: ${{ secrets.OTHELLO_BOARD_BASE64 }}
+          GREEDY_STRATEGY: ${{ secrets.GREEDY_STRATEGY_BASE64 }}
+          HUMAN_STRATEGY: ${{ secrets.HUMAN_STRATEGY_BASE64 }}
+          RANDOM_STRATEGY: ${{ secrets.RANDOM_STRATEGY_BASE64 }}
         run: |
           mkdir -p backend/src/main/java/com/othello/backend/engine/
+          mkdir -p backend/src/main/java/com/othello/backend/strategy/
+
+          # Function to safely decode
+          decode_secret() {
+            echo "$1" > temp_base64.txt
+            openssl base64 -d -A -in temp_base64.txt -out "$2"
+            rm temp_base64.txt
+          }
+
+          decode_secret "$OTHELLO_JAVA" "backend/src/main/java/com/othello/backend/engine/Othello.java"
+          decode_secret "$OTHELLO_BOARD" "backend/src/main/java/com/othello/backend/engine/OthelloBoard.java"
+          decode_secret "$GREEDY_STRATEGY" "backend/src/main/java/com/othello/backend/strategy/GreedyStrategy.java"
+          decode_secret "$HUMAN_STRATEGY" "backend/src/main/java/com/othello/backend/strategy/HumanStrategy.java"
+          decode_secret "$RANDOM_STRATEGY" "backend/src/main/java/com/othello/backend/strategy/RandomStrategy.java"
           
-          # Write the secret to a file and decode it
-          echo "${{ secrets.OTHELLO_JAVA_BASE64 }}" > temp_base64.txt
-          openssl base64 -d -A -in temp_base64.txt -out backend/src/main/java/com/othello/backend/engine/Othello.java
-          
-          echo "Verification Results:"
-          echo "-----------------------"
-          echo "File size: $(stat -c%s backend/src/main/java/com/othello/backend/engine/Othello.java) bytes"
-          echo "First 5 lines of the file:"
-          head -n 5 backend/src/main/java/com/othello/backend/engine/Othello.java
-          echo "-----------------------"
-          
-          # This 'exit 1' will force the action to fail so you can see the logs easily
-          echo "Stopping test here to check logs..."
-          exit 1
+          echo "All school files recreated successfully."
 
       - name: Build with Maven
         run: mvn -f backend/pom.xml clean package -DskipTests
@@ -43,6 +50,6 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy to Railway
-        run: railway up --detach
+        run: railway up --detach --project ${{ secrets.RAILWAY_PROJECT_ID }}
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
