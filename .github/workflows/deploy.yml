@@ -18,30 +18,50 @@ jobs:
           cache: 'maven'
 
       - name: Recreate School Files
-        env:
-          OTHELLO_JAVA: ${{ secrets.OTHELLO_JAVA_BASE64 }}
-          OTHELLO_BOARD: ${{ secrets.OTHELLO_BOARD_BASE64 }}
-          GREEDY_STRATEGY: ${{ secrets.GREEDY_STRATEGY_BASE64 }}
-          HUMAN_STRATEGY: ${{ secrets.HUMAN_STRATEGY_BASE64 }}
-          RANDOM_STRATEGY: ${{ secrets.RANDOM_STRATEGY_BASE64 }}
         run: |
           mkdir -p backend/src/main/java/com/othello/backend/engine/
           mkdir -p backend/src/main/java/com/othello/backend/strategy/
-
-          # Function to safely decode
-          decode_secret() {
-            echo "$1" > temp_base64.txt
-            openssl base64 -d -A -in temp_base64.txt -out "$2"
-            rm temp_base64.txt
-          }
-
-          decode_secret "$OTHELLO_JAVA" "backend/src/main/java/com/othello/backend/engine/Othello.java"
-          decode_secret "$OTHELLO_BOARD" "backend/src/main/java/com/othello/backend/engine/OthelloBoard.java"
-          decode_secret "$GREEDY_STRATEGY" "backend/src/main/java/com/othello/backend/strategy/GreedyStrategy.java"
-          decode_secret "$HUMAN_STRATEGY" "backend/src/main/java/com/othello/backend/strategy/HumanStrategy.java"
-          decode_secret "$RANDOM_STRATEGY" "backend/src/main/java/com/othello/backend/strategy/RandomStrategy.java"
           
-          echo "All school files recreated successfully."
+          # We use 'cat' with a delimiter to write the secret directly to a file. 
+          # This avoids shell character limits.
+          
+          cat <<EOF > othello.base64
+          ${{ secrets.OTHELLO_JAVA_BASE64 }}
+          EOF
+          openssl base64 -d -A -in othello.base64 -out backend/src/main/java/com/othello/backend/engine/Othello.java
+          
+          cat <<EOF > board.base64
+          ${{ secrets.OTHELLO_BOARD_BASE64 }}
+          EOF
+          openssl base64 -d -A -in board.base64 -out backend/src/main/java/com/othello/backend/engine/OthelloBoard.java
+          
+          cat <<EOF > greedy.base64
+          ${{ secrets.GREEDY_STRATEGY_BASE64 }}
+          EOF
+          openssl base64 -d -A -in greedy.base64 -out backend/src/main/java/com/othello/backend/strategy/GreedyStrategy.java
+          
+          cat <<EOF > human.base64
+          ${{ secrets.HUMAN_STRATEGY_BASE64 }}
+          EOF
+          openssl base64 -d -A -in human.base64 -out backend/src/main/java/com/othello/backend/strategy/HumanStrategy.java
+          
+          cat <<EOF > random.base64
+          ${{ secrets.RANDOM_STRATEGY_BASE64 }}
+          EOF
+          openssl base64 -d -A -in random.base64 -out backend/src/main/java/com/othello/backend/strategy/RandomStrategy.java
+          
+          cat <<EOF > pgreedy.base64
+          ${{ secrets.PLAYER_GREEDY_BASE64 }}
+          EOF
+          openssl base64 -d -A -in pgreedy.base64 -out backend/src/main/java/com/othello/backend/strategy/PlayerGreedy.java
+          
+          cat <<EOF > phuman.base64
+          ${{ secrets.PLAYER_HUMAN_BASE64 }}
+          EOF
+          openssl base64 -d -A -in phuman.base64 -out backend/src/main/java/com/othello/backend/strategy/PlayerHuman.java
+          
+          echo "Decoding complete. Checking if files are whole..."
+          tail -n 1 backend/src/main/java/com/othello/backend/engine/Othello.java
 
       - name: Build with Maven
         run: mvn -f backend/pom.xml clean package -DskipTests
