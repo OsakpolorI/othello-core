@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Previously developed school-assignment core logic (Academic Integrity)
+**/Othello.java
+**/OthelloBoard.java
+**/GreedyStrategy.java
+**/HumanStrategy.java
+**/RandomStrategy.java
+**/PlayerGreedy.java
+**/PlayerHuman.java
