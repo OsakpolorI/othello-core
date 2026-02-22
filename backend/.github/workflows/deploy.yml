@@ -1,0 +1,42 @@
+name: Build and Deploy to Railway
+
+on:
+  push:
+    branches: [ "main", "deploy/cloud" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Recreate School Files
+        run: |
+          mkdir -p backend/src/main/java/com/othello/backend/engine/
+          mkdir -p backend/src/main/java/com/othello/backend/strategy/
+          
+          echo "${{ secrets.OTHELLO_JAVA_BASE64 }}" | base64 -d > backend/src/main/java/com/othello/backend/engine/Othello.java
+          echo "${{ secrets.OTHELLO_BOARD_BASE64 }}" | base64 -d > backend/src/main/java/com/othello/backend/engine/OthelloBoard.java
+          echo "${{ secrets.GREEDY_STRATEGY_BASE64 }}" | base64 -d > backend/src/main/java/com/othello/backend/strategy/GreedyStrategy.java
+          echo "${{ secrets.HUMAN_STRATEGY_BASE64 }}" | base64 -d > backend/src/main/java/com/othello/backend/strategy/HumanStrategy.java
+          echo "${{ secrets.RANDOM_STRATEGY_BASE64 }}" | base64 -d > backend/src/main/java/com/othello/backend/strategy/RandomStrategy.java
+
+      # Build the JAR first to ensure the code is valid
+      - name: Build with Maven
+        run: mvn -f backend/pom.xml clean package -DskipTests
+
+      # Install Railway CLI and Deploy
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        run: railway up --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

@@ -5,4 +5,4 @@ nixPkgs = ['jdk17', 'maven']
 cmds = ['mvn -f backend/pom.xml clean package -DskipTests']
 
 [start]
-cmd = 'java -jar backend/target/*.jar'
+cmd = 'java -Xmx128M -jar backend/target/*.jar'
