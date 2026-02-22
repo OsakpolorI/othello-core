@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ['jdk17', 'maven']
+
+[phases.build]
+cmds = ['mvn -f backend/pom.xml clean package -DskipTests']
+
+[start]
+cmd = 'java -jar backend/target/*.jar'
