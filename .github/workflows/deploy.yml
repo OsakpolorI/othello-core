@@ -17,34 +17,24 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Recreate School Files
-        env:
-          OTHELLO_JAVA: ${{ secrets.OTHELLO_JAVA_BASE64 }}
-          OTHELLO_BOARD: ${{ secrets.OTHELLO_BOARD_BASE64 }}
-          GREEDY_STRATEGY: ${{ secrets.GREEDY_STRATEGY_BASE64 }}
-          HUMAN_STRATEGY: ${{ secrets.HUMAN_STRATEGY_BASE64 }}
-          RANDOM_STRATEGY: ${{ secrets.RANDOM_STRATEGY_BASE64 }}
-          PLAYER_GREEDY: ${{ secrets.PLAYER_GREEDY_BASE64 }}
-          PLAYER_HUMAN: ${{ secrets.PLAYER_HUMAN_BASE64 }}
+      - name: TEST - Verify Othello.java Injection
         run: |
           mkdir -p backend/src/main/java/com/othello/backend/engine/
-          mkdir -p backend/src/main/java/com/othello/backend/strategy/
           
-          echo "$OTHELLO_JAVA" | base64 -d > backend/src/main/java/com/othello/backend/engine/Othello.java
-          echo "$OTHELLO_BOARD" | base64 -d > backend/src/main/java/com/othello/backend/engine/OthelloBoard.java
-          echo "$GREEDY_STRATEGY" | base64 -d > backend/src/main/java/com/othello/backend/strategy/GreedyStrategy.java
-          echo "$HUMAN_STRATEGY" | base64 -d > backend/src/main/java/com/othello/backend/strategy/HumanStrategy.java
-          echo "$RANDOM_STRATEGY" | base64 -d > backend/src/main/java/com/othello/backend/strategy/RandomStrategy.java
-          echo "$PLAYER_GREEDY" | base64 -d > backend/src/main/java/com/othello/backend/strategy/PlayerGreedy.java
-          echo "$PLAYER_HUMAN" | base64 -d > backend/src/main/java/com/othello/backend/strategy/PlayerHuman.java
+          # Write the secret to a file and decode it
+          echo "${{ secrets.OTHELLO_JAVA_BASE64 }}" > temp_base64.txt
+          openssl base64 -d -A -in temp_base64.txt -out backend/src/main/java/com/othello/backend/engine/Othello.java
           
-          # --- DEBUG SECTION ---
-          echo "Checking file sizes (should not be 0):"
-          ls -l backend/src/main/java/com/othello/backend/engine/
-          ls -l backend/src/main/java/com/othello/backend/strategy/
+          echo "Verification Results:"
+          echo "-----------------------"
+          echo "File size: $(stat -c%s backend/src/main/java/com/othello/backend/engine/Othello.java) bytes"
+          echo "First 5 lines of the file:"
+          head -n 5 backend/src/main/java/com/othello/backend/engine/Othello.java
+          echo "-----------------------"
           
-          echo "Verifying first line of HumanStrategy (should be package com.othello...):"
-          head -n 1 backend/src/main/java/com/othello/backend/strategy/HumanStrategy.java
+          # This 'exit 1' will force the action to fail so you can see the logs easily
+          echo "Stopping test here to check logs..."
+          exit 1
 
       - name: Build with Maven
         run: mvn -f backend/pom.xml clean package -DskipTests
