@@ -18,15 +18,24 @@ jobs:
           cache: 'maven'
 
       - name: Recreate School Files
+        env:
+          OTHELLO_JAVA: ${{ secrets.OTHELLO_JAVA_BASE64 }}
+          OTHELLO_BOARD: ${{ secrets.OTHELLO_BOARD_BASE64 }}
+          GREEDY_STRATEGY: ${{ secrets.GREEDY_STRATEGY_BASE64 }}
+          HUMAN_STRATEGY: ${{ secrets.HUMAN_STRATEGY_BASE64 }}
+          RANDOM_STRATEGY: ${{ secrets.RANDOM_STRATEGY_BASE64 }}
         run: |
           mkdir -p backend/src/main/java/com/othello/backend/engine/
           mkdir -p backend/src/main/java/com/othello/backend/strategy/
           
-          echo "${{ secrets.OTHELLO_JAVA_BASE64 }}" | base64 -d > backend/src/main/java/com/othello/backend/engine/Othello.java
-          echo "${{ secrets.OTHELLO_BOARD_BASE64 }}" | base64 -d > backend/src/main/java/com/othello/backend/engine/OthelloBoard.java
-          echo "${{ secrets.GREEDY_STRATEGY_BASE64 }}" | base64 -d > backend/src/main/java/com/othello/backend/strategy/GreedyStrategy.java
-          echo "${{ secrets.HUMAN_STRATEGY_BASE64 }}" | base64 -d > backend/src/main/java/com/othello/backend/strategy/HumanStrategy.java
-          echo "${{ secrets.RANDOM_STRATEGY_BASE64 }}" | base64 -d > backend/src/main/java/com/othello/backend/strategy/RandomStrategy.java
+          echo "$OTHELLO_JAVA" | base64 -d > backend/src/main/java/com/othello/backend/engine/Othello.java
+          echo "$OTHELLO_BOARD" | base64 -d > backend/src/main/java/com/othello/backend/engine/OthelloBoard.java
+          echo "$GREEDY_STRATEGY" | base64 -d > backend/src/main/java/com/othello/backend/strategy/GreedyStrategy.java
+          echo "$HUMAN_STRATEGY" | base64 -d > backend/src/main/java/com/othello/backend/strategy/HumanStrategy.java
+          echo "$RANDOM_STRATEGY" | base64 -d > backend/src/main/java/com/othello/backend/strategy/RandomStrategy.java
+
+      # This line helps us verify if the files are actually created
+          ls -l backend/src/main/java/com/othello/backend/engine/
 
       # Build the JAR first to ensure the code is valid
       - name: Build with Maven
