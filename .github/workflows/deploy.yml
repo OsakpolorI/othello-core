@@ -75,4 +75,5 @@ jobs:
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
         run: |
           cd backend
+          rm .gitignore 
           railway up --detach --project "$RAILWAY_PROJECT_ID" --environment production --service disciplined-abundance
