@@ -1,0 +1,9 @@
+[phases.setup]
+nixPkgs = ['jdk21', 'maven']
+
+[phases.build]
+cmds = ['mvn clean package -DskipTests']
+
+[start]
+# Look in the local target folder
+cmd = 'java -Xmx128M -jar target/othello-api-0.0.1-SNAPSHOT.jar'

@@ -1,8 +1,0 @@
-[phases.setup]
-nixPkgs = ['jdk21', 'maven']
-
-[phases.build]
-cmds = ['mvn -f backend/pom.xml clean package -DskipTests']
-
-[start]
-cmd = 'java -Xmx128M -jar backend/target/othello-api-0.0.1-SNAPSHOT.jar'
