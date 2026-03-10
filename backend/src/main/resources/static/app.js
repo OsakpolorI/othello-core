@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameOverMessage = document.getElementById('game-over-message');
     const newGameFromOverBtn = document.getElementById('new-game-from-over');
     const winRate = document.getElementById('win-rate');
+    const notificationContainer = document.getElementById('notification-container');
     const moveSFX = new Audio('/audio/move.mp3');
     let inputLocked = false;
 
@@ -25,6 +26,36 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.userId = crypto.randomUUID();
     }
     const userId = localStorage.userId;
+
+    function showNotification(message, type = 'error', duration = 5000, actionBtn = null) {
+        const notification = document.createElement('div');
+        notification.classList.add('error-notification', type);
+        
+        const messageEl = document.createElement('span');
+        messageEl.textContent = message;
+        notification.appendChild(messageEl);
+        
+        if (actionBtn) {
+            notification.appendChild(actionBtn);
+        }
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.classList.add('error-notification-close');
+        closeBtn.textContent = '×';
+        closeBtn.addEventListener('click', () => removeNotification(notification));
+        notification.appendChild(closeBtn);
+        
+        notificationContainer.appendChild(notification);
+        
+        if (duration > 0) {
+            setTimeout(() => removeNotification(notification), duration);
+        }
+    }
+
+    function removeNotification(notification) {
+        notification.classList.add('hidden');
+        setTimeout(() => notification.remove(), 300);
+    }
 
     function addCoordinates() {
         document.querySelectorAll('.coord-label').forEach(el => el.remove());
@@ -133,15 +164,36 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!response.ok) {
-                const errorBody = await response.json();
-                throw new Error(errorBody.message || `HTTP ${response.status}`);
+                let errorMessage = `HTTP ${response.status}`;
+                try {
+                    const errorBody = await response.json();
+                    errorMessage = errorBody.message || errorMessage;
+                } catch {
+                    // If response body isn't JSON, use status message
+                }
+                throw new Error(errorMessage);
             }
             return await response.json();
         } catch (err) {
-            alert(err.message);
+            showNotification(err.message, 'error', 6000);
             if (url === 'new') {
-                let result = confirm('Do you want to delete your active session?')
-                if (result) await deleteRequest();
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete Session';
+                deleteBtn.style.marginLeft = '10px';
+                deleteBtn.style.padding = '4px 12px';
+                deleteBtn.style.background = 'rgba(255,255,255,0.2)';
+                deleteBtn.style.border = 'none';
+                deleteBtn.style.borderRadius = '4px';
+                deleteBtn.style.color = 'white';
+                deleteBtn.style.cursor = 'pointer';
+                deleteBtn.style.fontSize = '14px';
+                deleteBtn.style.fontWeight = 'bold';
+                deleteBtn.addEventListener('click', async () => {
+                    await deleteRequest();
+                    showNotification('Session deleted. You can now start a new game.', 'success', 4000);
+                });
+                
+                showNotification('Failed to start new game. You have an active session.', 'warning', 0, deleteBtn);
             }
             return null;
         }
@@ -237,11 +289,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!response.ok) {
-                const errorBody = await response.json();
-                throw new Error(errorBody.message || `HTTP ${response.status}`);
+                let errorMessage = `HTTP ${response.status}`;
+                try {
+                    const errorBody = await response.json();
+                    errorMessage = errorBody.message || errorMessage;
+                } catch {
+                    // If response body isn't JSON, use status message
+                }
+                throw new Error(errorMessage);
             }
         } catch (err) {
-            alert(err.message);
+            showNotification(err.message, 'error', 5000);
             return null;
         }
     }
